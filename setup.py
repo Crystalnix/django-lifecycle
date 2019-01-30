@@ -5,7 +5,7 @@ from os import path
 
 
 def readme():
-    with open("README.txt", "r") as infile:
+    with open("README.md", "r") as infile:
         return infile.read()
 
 
