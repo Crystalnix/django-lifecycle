@@ -9,8 +9,8 @@ class NullType(object):
     pass
 
 
-def hook(hook: str, when: str = None, was='*', is_now='*',
-         has_changed: bool = None, is_not=NullType):
+def hook(hook, when=None, was='*', is_now='*',
+         has_changed=None, is_not=NullType):
     assert hook in (
         'before_save',
         'after_save',
@@ -76,7 +76,7 @@ DJANGO_RELATED_FIELD_DESCRIPTOR_CLASSES = tuple(DJANGO_RELATED_FIELD_DESCRIPTOR_
 class LifecycleModelMixin(object):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(LifecycleModelMixin, self).__init__(*args, **kwargs)
         self._initial_state = self.__dict__.copy()
 
     @property
@@ -91,7 +91,7 @@ class LifecycleModelMixin(object):
 
         return dict(diffs)
 
-    def initial_value(self, field_name: str = None):
+    def initial_value(self, field_name=None):
         """
         Get initial value of field when model was instantiated.
         """
@@ -106,7 +106,7 @@ class LifecycleModelMixin(object):
 
         return attribute[0]
 
-    def has_changed(self, field_name: str = None) -> bool:
+    def has_changed(self, field_name=None):
         """
         Check if a field has changed since the model was instantiated.
         """
@@ -123,7 +123,7 @@ class LifecycleModelMixin(object):
 
     def save(self, *args, **kwargs):
         skip_hooks = kwargs.pop('skip_hooks', False)
-        save = super().save
+        save = super(LifecycleModelMixin, self).save
 
         if skip_hooks:
             save(*args, **kwargs)
@@ -149,7 +149,7 @@ class LifecycleModelMixin(object):
 
     def delete(self, *args, **kwargs):
         self._run_hooked_methods('before_delete')
-        super().delete(*args, **kwargs)
+        super(LifecycleModelMixin, self).delete(*args, **kwargs)
         self._run_hooked_methods('after_delete')
 
     @cached_property
@@ -225,7 +225,7 @@ class LifecycleModelMixin(object):
 
         return collected
 
-    def _run_hooked_methods(self, hook: str):
+    def _run_hooked_methods(self, hook):
         """
             Iterate through decorated methods to find those that should be
             triggered by the current hook. If conditions exist, check them before
@@ -244,7 +244,7 @@ class LifecycleModelMixin(object):
                 else:
                     method()
 
-    def _check_callback_conditions(self, specs: dict):
+    def _check_callback_conditions(self, specs):
         if not self._check_has_changed(specs):
             return False
 
@@ -256,7 +256,7 @@ class LifecycleModelMixin(object):
 
         return True
 
-    def _check_has_changed(self, specs: dict):
+    def _check_has_changed(self, specs):
         field_name = specs['when']
         has_changed = specs['has_changed']
 
@@ -265,7 +265,7 @@ class LifecycleModelMixin(object):
 
         return has_changed == self.has_changed(field_name)
 
-    def _check_value_transition(self, specs: dict):
+    def _check_value_transition(self, specs):
         field_name = specs['when']
         specs_match = 0
 
@@ -277,7 +277,7 @@ class LifecycleModelMixin(object):
 
         return specs_match == 2
 
-    def _check_is_not_condition(self, specs: dict):
+    def _check_is_not_condition(self, specs):
         field_name = specs['when']
         is_not = specs['is_not']
 
